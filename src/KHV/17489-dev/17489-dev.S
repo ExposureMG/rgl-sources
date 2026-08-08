@@ -17,6 +17,10 @@ _start:
 .print "  --- Ignoring heap errors ---"
 .include "ignoreHeapErr.S"
 
+
+.print "  --- Enabling vFuses ---"
+.include "vfuses.S"
+
 # ============================================================================
 #       Disable POST codes
 # ============================================================================
