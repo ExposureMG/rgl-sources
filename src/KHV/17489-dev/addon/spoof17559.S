@@ -1,3 +1,7 @@
+.include "macros.S"
+
+		.globl _start
+_start:
 
 # ============================================================================
 #	Disable panic on failed to resolve import
@@ -91,13 +95,3 @@
 	stw       %r29, 0(%r11)   #;//do what we patched..
 	blr
 9:
-
-
-
-
-
-
-
-
-
-

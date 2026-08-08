@@ -1,3 +1,8 @@
+.include "macros.S"
+
+		.globl _start
+_start:
+
 # ============================================================================
 #	Hypervisor Peek Poking on RGL  (freeboot type access using syscall 0)
 #      
@@ -47,8 +52,8 @@ loc_B5C0:
 loc_B5C8:
 	li        %r0, 0
 	stw       %r6, 0(%r5)
-	dcbst     %r0, %r5
-	icbi      %r0, %r5
+	dcbst     0, %r5
+	icbi      0, %r5
 	sync
 	isync
 
@@ -66,8 +71,8 @@ hvxExecuteCode:
 cpyLoop:                              
 	lwz       %r4, 0(%r6)     
 	stw       %r4, 0(%r5)
-	dcbst     %r0, %r5        
-	icbi      %r0, %r5
+	dcbst     0, %r5        
+	icbi      0, %r5
 	sync                    
 	isync
 	addi      %r5, %r5, 4     
@@ -91,6 +96,3 @@ loc_B610:
 	li        %r3, 2         
 	blr
 9:
-
-#----------------------------------------------------------
-

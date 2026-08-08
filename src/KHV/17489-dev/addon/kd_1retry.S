@@ -1,3 +1,7 @@
+.include "macros.S"
+
+		.globl _start
+_start:
 
 # ============================================================================
 #	Set KdpRetryCount and KdNetRetryCount to 1
@@ -17,6 +21,3 @@
 0:
 	.long 0x00000001  #patch to 1 retry
 9:
-
-
-

@@ -1,14 +1,14 @@
+.include "macros.S"
+
+		.globl _start
+_start:
 
 # ============================================================================
-#	Disable stock bootanimation
-#      (used for custom boot animations)
+#	Disable MU 
+#      
 # ============================================================================
 
-	KMAKEPATCH 0x800817DC
+	KMAKEPATCH 0x800BFB60
 0:
-	nop  # nop out AniStartBootAnimation
+	lis   %r10,  0x6000
 9:
-
-
-
-

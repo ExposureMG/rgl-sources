@@ -1,3 +1,7 @@
+.include "macros.S"
+
+		.globl _start
+_start:
 
 # ============================================================================
 #	Set SystemRoot to HDD
@@ -57,6 +61,3 @@
 0:
 	KMAKEBRANCH SysRootRecovery
 9:
-
-
-

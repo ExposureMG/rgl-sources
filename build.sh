@@ -85,9 +85,9 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 3. Build KHV Patches & Assemble XeBuild Patchsets
+# 3. Build KHV Patches & Assemble XeBuild Patchsets & Addons
 # -----------------------------------------------------------------------------
-echo "[3/3] Assembling patchsets for qualified -dev build folders..."
+echo "[3/3] Assembling patchsets and addons for qualified -dev build folders..."
 
 TARGET_VERSIONS=("13599-dev" "14699-dev" "14719-dev" "15574-dev" "17489-dev")
 
@@ -97,14 +97,18 @@ for VER in "${TARGET_VERSIONS[@]}"; do
     OUT_DIR="$SCRIPT_DIR/xebuild-folders/$VER/bin"
     mkdir -p "$OUT_DIR"
     
-    # Locate matching KHV source file
+    # Locate matching KHV main source file
     KHV_SRC=""
-    if [ -f "src/KHV/$VER/RGLoader-$VER.S" ]; then
+    if [ -f "src/KHV/$VER/$VER.S" ]; then
+        KHV_SRC="src/KHV/$VER/$VER.S"
+    elif [ -f "src/KHV/$VER/RGLoader-$VER.S" ]; then
         KHV_SRC="src/KHV/$VER/RGLoader-$VER.S"
+    elif [ -f "src/KHV/$VER/${VER%-dev}.S" ]; then
+        KHV_SRC="src/KHV/$VER/${VER%-dev}.S"
     elif [ -f "src/KHV/$VER/RGLoader-${VER%-dev}.S" ]; then
         KHV_SRC="src/KHV/$VER/RGLoader-${VER%-dev}.S"
     else
-        echo "ERROR: KHV patch file not found for $VER" >&2
+        echo "ERROR: KHV main patch file not found for $VER" >&2
         exit 1
     fi
     
@@ -129,12 +133,22 @@ for VER in "${TARGET_VERSIONS[@]}"; do
     # Corona RGH / RGH2 (CB 13121)
     cat "$BUILD_DIR/2BL/13121.bin" "$BL4_BIN" "$KHV_BIN" > "$OUT_DIR/patches_g2mcorona.bin"
     
-    echo "  Generated patchsets in $OUT_DIR/"
+    # Compile optional addon patches in src/KHV/$VER/addon/
+    if [ -d "src/KHV/$VER/addon" ]; then
+        for addon_file in src/KHV/$VER/addon/*.S; do
+            if [ -f "$addon_file" ]; then
+                addon_name="$(basename "$addon_file" .S)"
+                compile_patch "$addon_file" "$OUT_DIR/${addon_name}.bin"
+            fi
+        done
+    fi
+    
+    echo "  Generated patchsets & addons in $OUT_DIR/"
 done
 
 rm -rf "$BUILD_DIR"
 
 echo ""
 echo "======================================="
-echo " All patchsets built successfully!"
+echo " All patchsets & addons built successfully!"
 echo "======================================="

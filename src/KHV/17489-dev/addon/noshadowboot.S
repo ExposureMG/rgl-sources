@@ -1,19 +1,14 @@
+.include "macros.S"
+
+		.globl _start
+_start:
 
 # ============================================================================
-#	Disable MU 
-#      
+#	Disable shadowboots
+#      (speeds up boot times a little)
 # ============================================================================
 
-	KMAKEPATCH 0x800BFB60
+	KMAKEPATCH 0x80081888
 0:
-	lis   %r10,  0x6000
+	nop
 9:
-
-
-
-	
-	
-	
-	
-	
-	

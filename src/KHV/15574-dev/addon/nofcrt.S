@@ -1,3 +1,7 @@
+.include "macros.S"
+
+		.globl _start
+_start:
 
 	KMAKEPATCH 0x8002DE24
 0:
@@ -13,11 +17,3 @@
 0:
 	nop
 9:
-
-
-	
-	
-	
-	
-	
-	

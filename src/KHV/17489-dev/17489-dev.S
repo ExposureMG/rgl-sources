@@ -1,58 +1,44 @@
-# Devkit 15574 patches
+# Devkit 17489 patches
 
 .include "macros.S"
 
 		.globl _start
 _start:
 
-# ============================================================================
-#	RGLP header
-#	.long 0x52474C50  #"RGLP"
-# ============================================================================
+.print "  --- System root mapped to HDD ---"
+.include "sysroot_hdd.S"
 
-.ifdef disable_bootanim
-	.print "  --- BOOTANIM DISABLED ---"
-	.include "RGLoader-15574_disable_bootanim.S"
-.endif
+.print "  --- Disabling FCRT ---"
+.include "nofcrt.S"
 
-.ifdef NOFCRT
-	.print "  --- FCRT DISABLED ---"
-	.include "RGLoader-15574_nofcrt.S"
-.endif
+.print "  --- Disabling Mem Protection ---"
+.include "memprot.S"
 
-.ifdef NOMU
-	.print "  --- MU DISABLED ---"
-	.include "RGLoader-15574_noMU.S"
-.endif
-
-.ifdef SYSROOTHDD
-	.print "  --- SYSTEM ROOT MAPPED TO HDD ---"
-	.include "RGLoader-15574_sysroot_hdd.S"
-.endif
-
-.ifdef kd_1retry
-	.print "  --- KD retries patched to 1 ---"
-	.include "RGLoader-15574_kd_1retry.S"
-.endif
-
-
-#----------------------------------------------------------
+.print "  --- Ignoring heap errors ---"
+.include "ignoreHeapErr.S"
 
 # ============================================================================
-#       Fix controller unsync bug in 15574   
+#       Disable POST codes
 # ============================================================================
-	KMAKEPATCH 0x80127CD4
-0:
-	ori		%r9, %r9, 8
-	stb		%r9, 0x6F(%r31)
-9:
-#----------------------------------------------------------
+#	MAKEPATCH 0x2200
+#0:
+#	blr
+#9:
+
+# ============================================================================
+#       Test patch to fix wifi
+# ============================================================================
+#	KMAKEPATCH 0x801049A8
+#0:
+#	nop
+#9:
+
 
 # ============================================================================
 #       Retail XEX2 AES key   
 # note: should be static
 # ============================================================================
-	KMAKEPATCH 0x800000F0
+	MAKEPATCH 0x000000F0
 0:
 	.long 0x20B185A5
 	.long 0x9D28FDC3
@@ -60,63 +46,126 @@ _start:
 	.long 0x0896BF91
 9:
 
+#	MAKEPATCH 0x000000F0
+#0:
+#	.long 0xFF55AABE
+#	.long 0xDEADBEEF
+#	.long 0xDEADC0DE
+#	.long 0xBA115000
+#9:
+
 # ============================================================================
-#	HV Flag fixing function
-# note: store at empty space
+# 	Enable retail xex decryption
 # ============================================================================
-	KMAKEPATCH 0x8000AC00 
+	MAKEPATCH 0x00029C4C
 0:
-	lhz     %r3, 0x6(0)  # load flag byte into r3
-	li      %r4, 0x20
-	andc    %r3, %r3, %r4 # clear bit
-	sth     %r3, 0x6(0)      # store new flag
-	cmpldi   %r21,  0    # do what we patched
-	ba      0x18BC  
+	b       0x10   #;//skip signature check for retail consoles. (allow patched xex)
+9:
+	MAKEPATCH 0x00029C70
+0:
+	li      %r4,  0xF0   #;//patch XexAes key to retail one at 0xF0
 9:
 
 # ============================================================================
 #	HV jump to flag fixer
 # ============================================================================
-	KMAKEPATCH 0x800018B8 
+	MAKEPATCH 0x000018B8 
 0:
-	ba  0xAC00      #jump to flag clearing function
+	ba  0xB188      #(CHANGE THE ADDR TO FLAG FIXING FUNCTIONS ADDR) ^
 9:
 
+# ============================================================================
+#	HV Flag fixing function
+# note: store at empty space
+# ============================================================================
+	MAKEPATCH 0x0000B188 
+0:
+	lhz     %r3, 0x6(0)  # load flag byte into r3
+	li      %r4, 0x21
+	andc    %r3, %r3, %r4 # clear bit
+	sth     %r3, 0x6(0)      # store new flag
+	cmpldi   %r21,  0    # do what we patched
+	ba      0x18BC  #CHANGE THIS ADDR TO JUMP BACK
+9:
+
+# ============================================================================
+#       HvxSecuity Functions  (sets machine acct flags)
+# ============================================================================
+	MAKEPATCH 0x00006C58 #;//HvxSecurityGetActivated
+0:
+	li     %r3, 0
+	blr
+9:
+	MAKEPATCH 0x00006B98 #;//HvxSecurityGetDetected
+0:
+	li     %r3, 0
+	blr
+9:
+	MAKEPATCH 0x00006BE8 #;//HvxSecuritySetActivated
+0:
+	li     %r3, 0
+	blr
+9:
+	MAKEPATCH 0x00006B00 #;//HvxSecuritySetDetected
+0:
+	li     %r3, 0
+	blr
+9:
+	MAKEPATCH 0x00006CA8 #;//HvxSecuritySetStat
+0:
+	li     %r3, 0
+	blr
+9:
+	MAKEPATCH 0x00006D08
+0:
+	li  %r3, 0
+	blr
+9:
+	MAKEPATCH 0x00006C48
+0:
+	li  %r3, 0
+	blr
+9:
 
 # ============================================================================
 #  KV check patches - Hvxkeyshmacsha
 # ============================================================================
-	KMAKEPATCH 0x80004D54  # First check on
+	MAKEPATCH 0x00004F2C  # First check on
 0:
 	nop
 9:
 
 # ============================================================================
-#	HV Patch flag check
+#	HV Patch Console Seq check
 # ============================================================================
-	KMAKEPATCH 0x80006A68 
+	MAKEPATCH 0x00007214
 0:
-	nop  #nop out machine check
+	nop  
 9:
 
 #============================================================================
 #	HV patch jump
 # ============================================================================
-	KMAKEPATCH 0x80006C08
+	MAKEPATCH 0x000071B8
 0:
 	li %r3, 0 
+9:
+
+	MAKEPATCH 0x0000723C
+0:
+	nop
 9:
 
 # ============================================================================
 #       Patch XEX flag
 # ============================================================================
 
-	KMAKEPATCH 0x80006D40 
+	MAKEPATCH 0x000072F0
 0:
 	li %r3, 0
 9:
 
-	KMAKEPATCH 0x800070CC 
+	MAKEPATCH 0x000076A0
 0:
 	li %r4, 0x8
 	li %r3, 0
@@ -125,7 +174,7 @@ _start:
 #============================================================================
 #	HV Patch blow fuses              
 # ============================================================================
-	KMAKEPATCH 0x80009B80
+	MAKEPATCH 0x0000A1C8 
 0:
 	li %r3, 1 
 	blr
@@ -133,21 +182,18 @@ _start:
 
 
 # ============================================================================
-#	MachineCheck (mfspr   r3, LPCR)
+#	Remove fcrt.bin hash check
 # ============================================================================
-	KMAKEPATCH 0x80000218
+	MAKEPATCH 0x000264F0
 0:
-	.long 0x00000000
+	li    %r3, 1
 9:
-
-
-
 
 # ============================================================================
 #       DVDAuth2 retail key
 # note: should stay constant
 # ============================================================================
-	KMAKEPATCH 0x80010B38
+	MAKEPATCH 0x00010d08
 0:
 	.long 0xD1E3B33A
 	.long 0x6C1EF770
@@ -156,9 +202,9 @@ _start:
 9:
 
 # ============================================================================
-#	HvxDvdAuthRecordXControl
+#	HvxDvdAuthRecordXControl  Remove signature check
 # ============================================================================
-	KMAKEPATCH 0x80026B4C 
+	MAKEPATCH 0x00026C04 
 0:
 	li  %r3, 1
 9:
@@ -166,30 +212,15 @@ _start:
 # ============================================================================
 #       HV DAE 
 # ============================================================================
-	KMAKEPATCH 0x80028ECC
+	MAKEPATCH 0x00029018
 0:
 	li    %r3, 0
-	nop
-9:
-
-# ============================================================================
-# 	Check if XEX decrypted properly, if not swap the key
-# ============================================================================
-	KMAKEPATCH 0x80029AD0 
-0:
-	cmpldi  cr6,  %r28,  0
-	beq     cr6,  0x30
-	cmpwi   cr6,  %r3,  0
-	bne     cr6,  0x10
-	li      %r4,  0xF0
-	b 0x18
-	nop
 9:
 
 # ============================================================================
 #	HvxSetImagePageTableEntry memory addr check
 # ============================================================================
-	KMAKEPATCH 0x80029C88 
+	MAKEPATCH 0x00029E28
 0:
 	nop
 9:
@@ -197,34 +228,43 @@ _start:
 # ============================================================================
 #	HvxCreateImageMapping hash check
 # ============================================================================
-	KMAKEPATCH 0x8002C664 
+	MAKEPATCH 0x0002C82C
 0:
 	b  0x10
 9:
 
-#-----------------------------------------------------------------------
-
 # ============================================================================
-#	HV XEX region check 
+#	HvxCreateImageMapping HV XEX region check 
 # ============================================================================
-	KMAKEPATCH 0x8002C75C
+	MAKEPATCH 0x0002C924
 0:
 	nop
 9:
-
 
 # ============================================================================
 #	HvxExpansionInstall sig check
 # ============================================================================
-	KMAKEPATCH 0x80030BAC
+	MAKEPATCH 0x00030BAC
+0:
+	nop
+9:
+	MAKEPATCH 0x000206DC
+0:
+	li       %r3,  1
+9:
+	MAKEPATCH 0x00030C24
+0:
+	li       %r3,  0
+9:
+	MAKEPATCH 0x00030BEC
 0:
 	nop
 9:
 
 # ============================================================================
-#	HvxExpansionInstall hash? (uses memcmp) check
+#	HvxExpansionInstall hash check
 # ============================================================================
-	KMAKEPATCH 0x80030C2C 
+	MAKEPATCH 0x00030C2C 
 0:
 	nop
 9:
@@ -236,131 +276,82 @@ _start:
 #=============================================================================
 #------------
 
+# ============================================================================
+#       Fix controller unsync bug that still exists..  
+# ============================================================================
+	KMAKEPATCH 0x801287F4
+0:
+	ori		%r9, %r9, 8
+	stb		%r9, 0x6F(%r31)
+9:
 
 # ============================================================================
 #	Patch XEX Restrictions check
 # ============================================================================
-
-	KMAKEPATCH 0x800A2C08 
+	KMAKEPATCH 0x800A2F48
 0:
 	li     %r3,  1
 9:
 
-	KMAKEPATCH 0x800A0C6C
+	KMAKEPATCH 0x800A0FAC
 0:
 	b   0x18
 9:
 
-
-# ============================================================================
-#       SataCdRomAuthenticationExSequence
-# ============================================================================
-	KMAKEPATCH 0x800C51D0
-0:
-	b   0x38
-9:
-
-#----------------------------------------------------------
-
-# ============================================================================
-#	SataCdRomActivateHCDFRuntimePatch TSST signature check
-# ============================================================================
-	KMAKEPATCH 0x800C4BE4 
-0:
-	b   0x184
-9:
-
-# ============================================================================
-#	SataCdRomActivateHCDFRuntimePatch blacklisted drive check
-# ============================================================================
-	KMAKEPATCH 0x800C4C00
-0:
-	b   0x168
-9:
-
-
-# ============================================================================
-#	XexpVerifyMedia Type
-# ============================================================================
-	KMAKEPATCH 0x8009EB9C
-0:
-	li   %r3,  1
-9:
-
 # ============================================================================
 #	XexpVerifyXexHeaders
 # ============================================================================
-	KMAKEPATCH 0x800A06B0
-0:
-	li   %r3,  1
-9:
-
-# ============================================================================
-#	XexpVerifyXexHeaders
-# ============================================================================
-	KMAKEPATCH 0x800A0654
+	KMAKEPATCH 0x800A0994
 0:
 	li   %r3,  1 
 9:
+	KMAKEPATCH 0x800A09F0
+0:
+	nop
+9:
+
 
 # ============================================================================
 #	XexpVerifyMinimumVersion
 # ============================================================================
-	KMAKEPATCH 0x800A1470
+	KMAKEPATCH 0x800A17B0
 0:
-	li   %r3,  1
+	li   %r3,  0
 9:
 
 # ============================================================================
 #	XexpLoadFile
 # ============================================================================
-	KMAKEPATCH 0x800A2D6C
+	KMAKEPATCH 0x8009EE78
 0:
 	li   %r3,  1
 9:
 
-
-#-----------------------------------------------------------------------
-
-#=============================================================================
-#       nop out Shadowbooting on startup 
-#=============================================================================
-	KMAKEPATCH 0x8008180C
+# ============================================================================
+#	SataCdRomActivateHCDFRuntimePatch  
+#       patch out blacklisted drives for XGD3 discs (zero ExpUpdateModule)
+# ============================================================================
+	KMAKEPATCH 0x800C51E8
 0:
-	nop
+	li   %r11, 0
 9:
-
-#=============================================================================
-#       disable shadow booting function  
-#=============================================================================
-	KMAKEPATCH 0x80081348 
+	KMAKEPATCH 0x800C5210
 0:
-	li %r3, 0
-	blr
+	li   %r11, 0
 9:
-
-
-#-----------------------------------------------------------------------
-
-
 
 # ============================================================================
-#	XeKeysVerifyRSASignature
+#   SataCdRomAuthenticationExSequence
 # ============================================================================
-	KMAKEPATCH 0x80147E08 
+	KMAKEPATCH 0x800C57D8
 0:
-	nop
+	b   0x38
 9:
-	KMAKEPATCH 0x80147E3C
-0:
-	li   %r3, 1
-9:
-
 
 # ============================================================================
 #	SataCdRomVerifyDVDX2AuthoringSignature
 # ============================================================================
-	KMAKEPATCH 0x800C3170
+	KMAKEPATCH 0x800C3788
 0:
 	li   %r3, 1
 9:
@@ -368,57 +359,210 @@ _start:
 # ============================================================================
 #	SataDiskAuthenticateDevice
 # ============================================================================
-	KMAKEPATCH 0x801A6870 
+	KMAKEPATCH 0x801B0C98 
 0:
 	li   %r3, 1
 9:
 
-#==========THE FOLLOWING ARE NOT IMPORTANT AT THE MOMENT=====
+# ============================================================================
+#	XeKeysVerifyRSASignature
+# ============================================================================
+	KMAKEPATCH 0x8014A128
+0:
+	nop
+9:
+
+	KMAKEPATCH 0x8014A028
+0:
+	li    %r3, 1
+	blr
+9:
+
+	KMAKEPATCH 0x8014A15C
+0:
+	li   %r3, 1
+9:
 
 # ============================================================================
 #	XeKeysVerifyPIRSSignature
 # ============================================================================
-	KMAKEPATCH 0x80147EDC 
+	KMAKEPATCH 0x8014A1FC
 0:
 	li    %r3, 1
 9:
 
 # ============================================================================
 #	XeKeysConsoleSignatureVerification
-# note: jumps down to 'li r3, 1'
+#       patch flag check  & always return 1
 # ============================================================================
-	KMAKEPATCH 0x80149ED4
+	KMAKEPATCH 0x8014C35C
 0:
-	b    0x128
+	li   %r3, 1
 9:
+	KMAKEPATCH 0x8014C344 
+0:
+	li   %r3, 1
+9:
+	KMAKEPATCH 0x8014C364
+0:
+	li   %r3, 1
+9:
+
+# ============================================================================
+#	XexDeltaDecompressHeaders
+#       remove hash check
+# ============================================================================
+	KMAKEPATCH 0x800A6494
+0:
+	li   %r3, 0x14
+9:
+
+# ============================================================================
+#	XexpLoadCompressedImage
+#       remove hash check
+# ============================================================================
+	KMAKEPATCH 0x800A5BDC
+0:
+	li   %r3, 0x14
+9:
+
+# ============================================================================
+#	XexpLoadDeltaCompressedImage
+#       remove hash check
+# ============================================================================
+	KMAKEPATCH 0x800A628C
+0:
+	li   %r3, 0x14
+9:
+
+# ============================================================================
+#	XexpVerifyMedia Type
+# ============================================================================
+	KMAKEPATCH 0x8009EEDC
+0:
+	li   %r3,  1
+9:
+
+# ============================================================================
+#	VdpDelayExecution
+# ============================================================================
+	KMAKEPATCH 0x800F4B2C
+0:
+	nop
+9:
+	KMAKEPATCH 0x800F4B38
+0:
+	nop
+9:
+
+# ============================================================================
+#	XexpVerifyDeviceId 
+#       always return 0
+# ============================================================================
+	KMAKEPATCH 0x800A0DB8
+0:
+	li   %r3, 0
+9:
+	KMAKEPATCH 0x800A0FC4
+0:
+	li   %r3, 0
+9:
+
+# ============================================================================
+#	XexpTranslateAndVerifyBoundPath
+#       always return 1
+# ============================================================================
+	KMAKEPATCH 0x8009EE78
+0:
+	li   %r3, 1
+9:
+
+
 
 # ============================================================================
 #	StfsMapNewBlock hash mismatch
 # ============================================================================
-	KMAKEPATCH 0x800E1D34
+	KMAKEPATCH 0x800E22CC
 0:
-	b    0x34
+	b    0x34  #patch to unconditional branch
+9:
+
+# ============================================================================
+#	StfsNonCachedRead
+#       remove hash check (nop out bne)
+# ============================================================================
+	KMAKEPATCH 0x800E45E0
+0:
+	nop
 9:
 
 # ============================================================================
 #	SvodMapNewBlock hash mismatch 
 # ============================================================================
-	KMAKEPATCH 0x801837F0 
+	KMAKEPATCH 0x80193BE8
 0:
-	b 0x30
+	b 0x30  #patch to unconditional branch
 9:
 
 # ============================================================================
 #	SvodPartiallyCachedRead hash mismatch
 # ============================================================================
-	KMAKEPATCH 0x80183B04
+	KMAKEPATCH 0x80193FFC
 0:
 	nop
 9:
 
+# ============================================================================
+#	XeKeysSecurityLoadSettings - ignore
+# ============================================================================
+	KMAKEPATCH 0x800816C0
+0:
+	nop
+9:
+
+# ============================================================================
+#	XexpScanImageCodeSection - ignore
+# ============================================================================
+	KMAKEPATCH 0x8009FD90
+0:
+	b 0x5C
+9:
+
+# ============================================================================
+#	Load RGLoader.xex after XAM
+# ============================================================================
+
+.set ldBranchAddr, 0x80081AC8
+.set loaderFuncAddr, 0x801C1774 #;//empty space
+.set XexLoadImage, 0x800A3F08
 
 
-  
+	KMAKEPATCH loaderFuncAddr
+0:
+	.set strPath, (loaderFuncAddr + 0x20)
+	
+	lis   %r11, strPath@h
+	ori  %r3, %r11, strPath@l
+	li %r4, 8
+	li %r5, 0
+	li %r6, 0
+	KMAKEBRANCHL XexLoadImage 
+
+	li  %r3, 0
+	KMAKEBRANCH (ldBranchAddr+4) 
+	
+1:
+	.string "\\SystemRoot\\RGLoader.xex\0"
+2:
+	.align 2
+9:
+
+
+	KMAKEPATCH ldBranchAddr
+0:
+	KMAKEBRANCHL loaderFuncAddr
+9:
+
 
 # ============================================================================
 	.long 0xffffffff

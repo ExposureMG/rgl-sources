@@ -1,3 +1,7 @@
+.include "macros.S"
+
+		.globl _start
+_start:
 
 # ============================================================================
 #	Set SystemRoot to HDD
