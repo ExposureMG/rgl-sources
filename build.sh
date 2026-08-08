@@ -64,7 +64,7 @@ compile_patch() {
 # -----------------------------------------------------------------------------
 # 1. Build 2BL Patches
 # -----------------------------------------------------------------------------
-echo "[1/3] Building 2BL patches..."
+echo "[1/4] Building 2BL patches..."
 mkdir -p "$BUILD_DIR/2BL"
 compile_patch "src/2BL/4577.S"  "$BUILD_DIR/2BL/4577.bin"
 compile_patch "src/2BL/5772.S"  "$BUILD_DIR/2BL/5772.bin"
@@ -75,7 +75,7 @@ compile_patch "src/2BL/13121.S" "$BUILD_DIR/2BL/13121.bin"
 # -----------------------------------------------------------------------------
 # 2. Build 4BL Patches
 # -----------------------------------------------------------------------------
-echo "[2/3] Building 4BL patches..."
+echo "[2/4] Building 4BL patches..."
 mkdir -p "$BUILD_DIR/4BL"
 
 if [ "$USE_LFN" = true ]; then
@@ -87,9 +87,20 @@ fi
 # -----------------------------------------------------------------------------
 # 3. Build KHV Patches & Assemble XeBuild Patchsets & Addons
 # -----------------------------------------------------------------------------
-echo "[3/3] Assembling patchsets and addons for qualified -dev build folders..."
+echo "[3/4] Assembling patchsets and addons for qualified -dev build folders..."
 
-TARGET_VERSIONS=("13599-dev" "14699-dev" "14719-dev" "15574-dev" "17489-dev")
+TARGET_VERSIONS=(
+    "13599-dev"
+    "14699-dev"
+    "14719-dev"
+    "15574-dev"
+    "16202-dev"
+    "16203-dev"
+    "16547-dev"
+    "17150-dev"
+    "17349-dev"
+    "17489-dev"
+)
 
 for VER in "${TARGET_VERSIONS[@]}"; do
     echo "Processing $VER ..."
@@ -146,9 +157,24 @@ for VER in "${TARGET_VERSIONS[@]}"; do
     echo "  Generated patchsets & addons in $OUT_DIR/"
 done
 
+# -----------------------------------------------------------------------------
+# 4. Build XAM Patches
+# -----------------------------------------------------------------------------
+echo "[4/4] Building XAM patches into xebuild-folders..."
+
+find src/XAM -type f -name "rglXam.S" | sort | while read -r xam_src; do
+    xam_dir="$(dirname "$xam_src")"
+    ver="$(basename "$xam_dir")"
+    OUT_DIR="$SCRIPT_DIR/xebuild-folders/$ver/fs/"
+    mkdir -p "$OUT_DIR"
+    rglp_out="$OUT_DIR/rglXam.rglp"
+    compile_patch "$xam_src" "$rglp_out"
+    echo "  Generated $rglp_out"
+done
+
 rm -rf "$BUILD_DIR"
 
 echo ""
 echo "======================================="
-echo " All patchsets & addons built successfully!"
+echo " All patchsets, addons & XAM patches built successfully!"
 echo "======================================="
