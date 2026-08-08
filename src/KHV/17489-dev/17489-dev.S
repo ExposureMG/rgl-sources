@@ -17,6 +17,10 @@ _start:
 .print "  --- Ignoring heap errors ---"
 .include "ignoreHeapErr.S"
 
+.ifdef spoof_version
+	.print "  --- Spoofing version to 17559 ---"
+	.include "addon/spoof17559.S"
+.endif
 
 .print "  --- Enabling vFuses ---"
 .include "vfuses.S"

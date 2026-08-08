@@ -3,7 +3,13 @@
 # ============================================================================
  
 .include "macros.S"
-.include "settings.S"
+
+.ifdef spoof_version
+    .print "  --- Spoofing version to 17559 ---"
+    .set KRNL_VER, 17559
+.else
+    .set KRNL_VER, 17489
+.endif
 
 # ============================================================================
 #     xam!CXNetLogonTask::CXNetLogonTask+0x178

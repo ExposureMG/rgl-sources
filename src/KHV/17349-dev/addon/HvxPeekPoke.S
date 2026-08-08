@@ -51,8 +51,8 @@ loc_B5C0:
 loc_B5C8:
 	li        %r0, 0
 	stw       %r6, 0(%r5)
-	dcbst     %r0, %r5
-	icbi      %r0, %r5
+	dcbst     0, %r5
+	icbi      0, %r5
 	sync
 	isync
 
@@ -70,8 +70,8 @@ hvxExecuteCode:
 cpyLoop:                              
 	lwz       %r4, 0(%r6)     
 	stw       %r4, 0(%r5)
-	dcbst     %r0, %r5        
-	icbi      %r0, %r5
+	dcbst     0, %r5        
+	icbi      0, %r5
 	sync                    
 	isync
 	addi      %r5, %r5, 4     

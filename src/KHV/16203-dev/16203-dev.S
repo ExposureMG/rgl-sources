@@ -34,10 +34,10 @@ _start:
 # ============================================================================
 	KMAKEPATCH 0x8000AF60 
 0:
-	lhz     %r3, 0x6(%r0)  # load flag byte into r3
+	lhz     %r3, 0x6(0)  # load flag byte into r3
 	li      %r4, 0x20
 	andc    %r3, %r3, %r4 # clear bit
-	sth     %r3, 0x6(%r0)      # store new flag
+	sth     %r3, 0x6(0)      # store new flag
 	cmpldi   %r21,  0    # do what we patched
 	ba      0x18BC  #CHANGE THIS ADDR TO JUMP BACK
 9:
