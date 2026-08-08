@@ -30,5 +30,3 @@ MAKEPATCH 0x68A8
 
 .long 0xFFFFFFFF
 .end
-
-

@@ -1,11 +1,6 @@
-# RGLoader patches file
-# Patches follow same format as XeBuild, but with RGLP at start
-# When used with RGLoader patch engine, they should be at 0xb0000 in the NAND (without ECC)
-# [4byte offset] [4byte patch count] [4byte patch]...
-
 # Devkit 14699 patches
 
-.include "..\\..\\macros.S"
+.include "macros.S"
 
 
 		.globl _start
@@ -13,7 +8,7 @@ _start:
 
 # ============================================================================
 #	RGLP header
-	.long 0x52474C50
+#	.long 0x52474C50
 # ============================================================================
 
 .ifdef NOFCRT
@@ -118,10 +113,10 @@ _start:
 # ============================================================================
 	KMAKEPATCH 0x8000AC00 
 0:
-	lhz     %r3, 0x6(%r0)  # load flag byte into r3
+	lhz     %r3, 0x6(0)  # load flag byte into r3
 	li      %r4, 0x20
 	andc    %r3, %r3, %r4 # clear bit
-	sth     %r3, 0x6(%r0)      # store new flag
+	sth     %r3, 0x6(0)      # store new flag
 	li      %r3, 0x200    # do what we patched
 	ba      0x18C4  
 9:

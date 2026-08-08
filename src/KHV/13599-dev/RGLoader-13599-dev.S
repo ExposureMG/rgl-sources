@@ -255,10 +255,10 @@ _start:
 	.long 0x8000A474 - KernelBase
 	.long (9f - 0f) / 4
 0:
-	lhz     %r3, 0x6(%r0)  # load flag byte into r3
+	lhz     %r3, 0x6(0)  # load flag byte into r3
 	li      %r4, 0x20
 	andc    %r3, %r3, %r4 # clear bit
-	sth     %r3, 0x6(%r0)      # store new flag
+	sth     %r3, 0x6(0)      # store new flag
 	li      %r3, 0x200    # do what we patched
 	ba      0x18C4  
 9:	

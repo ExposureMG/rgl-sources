@@ -12,7 +12,6 @@ MAKEPATCH 0x59A0
     .long 0x38600000
 9:
 
-
 # =================================================================================
 # Nop smc hash check
 MAKEPATCH 0x5240
@@ -36,7 +35,3 @@ MAKEPATCH 0x58AC
 
 .long 0xFFFFFFFF
 .end
-
-
-
-

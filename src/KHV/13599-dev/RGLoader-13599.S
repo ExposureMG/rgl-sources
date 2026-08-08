@@ -1,7 +1,3 @@
-# RGLoader patches file
-# Patches follow same format as freeBOOT:
-# [4byte offset] [4byte patch count] [4byte patch]...
-
 # Retail 13599 patches
 
 .set	KernelBase,		0x80000000
@@ -11,8 +7,8 @@ _start:
 
 # ============================================================================
 #	RGLP header
+#	.long 0x52474C50
 # ============================================================================
-	.long 0x52474C50
 
 # ============================================================================
 #	KV signature check

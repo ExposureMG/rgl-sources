@@ -1,3 +1,5 @@
+.include "lfn.S"
+
 MAKEPATCH 0xE70 # patch loader
 0:
     MAKEBRANCH 0x5AC0
@@ -49,7 +51,3 @@ MAKEPATCH 0x5B10
 
 	MAKEBRANCH 0x288
 9:
-
-
-
- 

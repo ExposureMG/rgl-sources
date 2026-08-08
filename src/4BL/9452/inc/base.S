@@ -77,4 +77,3 @@ MAKEPATCH 0x00004F30
 	ori       %r11, %r11, 0xC
     MAKEBRANCH 0xE58
 9:
-

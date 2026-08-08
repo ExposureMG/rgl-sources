@@ -1,4 +1,4 @@
-.include "macros.S"
+.include "base.S"
 
 # =================================================================================
 # patch loader
@@ -47,8 +47,8 @@ MAKEPATCH 0x00004FA0
         mtmsrd    %r7, 0
         isync
         stw      %r3, 0(%r4)      # store instruction in %r4
-        dcbst     %r0, %r4         # instruction cache stuff
-        icbi      %r0, %r4
+        dcbst     0, %r4         # instruction cache stuff
+        icbi      0, %r4
         sync
         isync
         addi      %r4, %r4, 4      # increment patch destination pointer
@@ -138,8 +138,8 @@ MAKEPATCH 0x00005020
 		    1:	
                 lwz     %r8, 0(%r5)		#//Memcopy			
 			    stw     %r8, 0(%r6)
-			    dcbst   %r0, %r6		#//Flush cache to ram
-			    icbi	%r0, %r6
+			    dcbst   0, %r6		#//Flush cache to ram
+			    icbi	0, %r6
 			    sync	0
 			    isync
 			    addi    %r6, %r6, 4
@@ -247,7 +247,3 @@ MAKEPATCH 0x00005020
             
     MAKEBRANCH 0x290
 9:
-
-# =================================================================================
-# need to leave this next line blank for our patchsets
-# =================================================================================

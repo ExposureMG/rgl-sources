@@ -1,18 +1,13 @@
-# RGLoader patches file
-# Patches follow same format as XeBuild, but with RGLP at start
-# When used with RGLoader patch engine, refer to the ini for patches offset in NAND
-# [4byte offset] [4byte patch count] [4byte patch]...
+# Devkit 17489 patches
 
-# Devkit 17489patches
-
-.include "..\\..\\macros.S"
+.include "macros.S"
 
 		.globl _start
 _start:
 
 # ============================================================================
 #	RGLP header
-	.long 0x52474C50  #"RGLP" 
+#	.long 0x52474C50  #"RGLP" 
 # ============================================================================
 
 
@@ -48,7 +43,7 @@ _start:
 
 #.ifdef STATICSEED
 	.print "  --- Using spoofing dash ---"
-	.include "RGLoader-17489_spoof17526.S"
+	.include "RGLoader-17489_spoof17559.S"
 #.endif
 
 #.ifdef HEAP
@@ -126,10 +121,10 @@ _start:
 # ============================================================================
 	MAKEPATCH 0x0000B188 
 0:
-	lhz     %r3, 0x6(%r0)  # load flag byte into r3
+	lhz     %r3, 0x6(0)  # load flag byte into r3
 	li      %r4, 0x21
 	andc    %r3, %r3, %r4 # clear bit
-	sth     %r3, 0x6(%r0)      # store new flag
+	sth     %r3, 0x6(0)      # store new flag
 	cmpldi   %r21,  0    # do what we patched
 	ba      0x18BC  #CHANGE THIS ADDR TO JUMP BACK
 9:

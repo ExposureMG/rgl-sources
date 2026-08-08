@@ -28,6 +28,5 @@ MAKEPATCH 0x6860
     .long 0x48000168
 9:
 
-
 .long 0xFFFFFFFF
 .end
